@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SO2 UPGRADER — Апгрейд скинов Standoff 2</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔫</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0810;--panel:#12101c;--panel2:#1a1726;
+  --border:rgba(255,255,255,.08);--text:#eae7f0;--muted:#8b83a0;
+  --gold:#f0b90b;--orange:#ff7a00;--red:#ef4444;
+  --green:#22c55e;--blue:#3b82f6;--purple:#a855f7;
+  --covert:#eb4b4b;--classified:#d32ce6;--restricted:#8847ff;
+  --mil:#4b69ff;--ind:#5e98d9;--cons:#b0c3d9;
+}
+html,body{height:100%}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(700px 500px at 15% -10%,rgba(240,185,11,.14),transparent 70%),radial-gradient(600px 500px at 85% 10%,rgba(255,122,0,.1),transparent 70%);}
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:0 16px 60px}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(18px);background:rgba(10,8,16,.8);border-bottom:1px solid var(--border);margin-bottom:24px;}
+.head-in{max-width:1240px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.logo{font-weight:900;font-size:20px;letter-spacing:1px;display:flex;align-items:center;gap:9px;white-space:nowrap;}
+.logo span{background:linear-gradient(90deg,var(--gold),var(--orange),#ff3d00);-webkit-background-clip:text;background-clip:text;color:transparent;}
+.logo .gun{filter:drop-shadow(0 0 10px rgba(240,185,11,.8));animation:bob 3s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-4px) rotate(6deg)}}
+.spacer{flex:1}
+.head-user{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mini-ava{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--gold),var(--orange));display:grid;place-items:center;font-weight:900;font-size:15px;color:#1a0d00;box-shadow:0 0 20px rgba(240,185,11,.4);cursor:pointer;transition:.2s;flex-shrink:0;}
+.mini-ava:hover{transform:scale(1.07)}
+.mini-ava.admin{background:linear-gradient(135deg,var(--red),var(--orange));box-shadow:0 0 22px rgba(239,68,68,.55);}
+.mini-info{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.mini-nick{font-weight:800;font-size:14px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mini-id{font-family:monospace;font-size:10.5px;color:var(--muted);letter-spacing:.5px}
+.balance{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(240,185,11,.14),rgba(255,122,0,.14));border:1px solid rgba(240,185,11,.35);padding:8px 16px;border-radius:12px;font-weight:800;font-size:15px;box-shadow:0 0 22px rgba(240,185,11,.18);white-space:nowrap;}
+.balance .coin{width:22px;height:22px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#fde047,#f59e0b);display:grid;place-items:center;font-size:12px;color:#78350f;font-weight:900;box-shadow:0 0 10px rgba(245,158,11,.7);}
+
+/* NAV */
+.tabs{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap}
+.tab{background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:11px 20px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:700;transition:.2s;font-family:inherit;display:flex;align-items:center;gap:8px;}
+.tab:hover{color:#fff;border-color:rgba(240,185,11,.5);transform:translateY(-2px)}
+.tab.active{background:linear-gradient(135deg,rgba(240,185,11,.3),rgba(255,122,0,.16));color:#fff;border-color:rgba(240,185,11,.75);box-shadow:0 0 26px rgba(240,185,11,.3);}
+.tab.admin-tab{background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(255,122,0,.14));border-color:rgba(239,68,68,.5);color:#fbbf24;}
+.tab.admin-tab.active{background:linear-gradient(135deg,rgba(239,68,68,.4),rgba(255,122,0,.25));color:#fff;box-shadow:0 0 26px rgba(239,68,68,.4);}
+.tab.admin-tab.unlocked{background:linear-gradient(135deg,rgba(34,197,94,.3),rgba(74,222,128,.14));border-color:rgba(34,197,94,.6);color:#4ade80;}
+
+.panel{display:none;animation:fade .35s ease}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.panel-head{margin-bottom:18px}
+.panel-head h2{font-size:23px;margin-bottom:5px}
+.panel-head p{color:var(--muted);font-size:14px}
+
+/* BUTTONS */
+.btn{font-family:inherit;font-weight:800;font-size:14px;cursor:pointer;border:none;border-radius:12px;padding:11px 22px;transition:.2s;color:#fff;background:linear-gradient(135deg,var(--gold),var(--orange));box-shadow:0 6px 20px rgba(240,185,11,.35);width:100%;}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 28px rgba(240,185,11,.5)}
+.btn:active:not(:disabled){transform:translateY(0)}
+.btn:disabled,.btn.disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;filter:grayscale(.5)}
+.btn.green{background:linear-gradient(135deg,#22c55e,#15803d);box-shadow:0 6px 20px rgba(34,197,94,.35)}
+.btn.red{background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 6px 20px rgba(239,68,68,.35)}
+.btn.cyan{background:linear-gradient(135deg,#22d3ee,#0891b2);box-shadow:0 6px 20px rgba(34,211,238,.3)}
+.btn.ghost{background:transparent;border:1px solid var(--border);box-shadow:none}
+.btn.ghost:hover:not(:disabled){border-color:rgba(240,185,11,.6);background:rgba(240,185,11,.08)}
+.btn.small{padding:8px 14px;font-size:12.5px;width:auto}
+
+/* UPGRADER */
+.upg-csgo{display:grid;grid-template-columns:1fr 340px 1fr;gap:16px;align-items:start;background:linear-gradient(135deg,rgba(20,15,30,.95),rgba(12,8,20,.9));border:1px solid rgba(240,185,11,.25);border-radius:22px;padding:22px;box-shadow:0 0 60px rgba(240,185,11,.06),inset 0 0 60px rgba(0,0,0,.4);}
+@media(max-width:980px){.upg-csgo{grid-template-columns:1fr}}
+.upg-col{display:flex;flex-direction:column;gap:14px;align-items:center;}
+.upg-col-head{display:flex;flex-direction:column;gap:3px;align-items:center;}
+.upg-col-title{font-size:12px;font-weight:900;letter-spacing:2.5px;text-transform:uppercase;color:#e8e4f5;display:flex;align-items:center;gap:6px;}
+.upg-col-sub{font-size:10.5px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-weight:700;}
+.upg-slots{display:grid;grid-template-columns:repeat(3,74px);grid-template-rows:repeat(2,74px);gap:8px;justify-content:center;}
+.upg-slots.target-only{grid-template-columns:88px;grid-template-rows:88px;}
+.slot{width:100%;height:100%;border-radius:14px;background:linear-gradient(160deg,rgba(30,24,50,.6),rgba(15,10,25,.6));border:2px dashed rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;position:relative;overflow:hidden;user-select:none;}
+.slot:hover{border-color:rgba(240,185,11,.6);background:linear-gradient(160deg,rgba(240,185,11,.08),rgba(15,10,25,.6));box-shadow:0 0 22px rgba(240,185,11,.15);}
+.slot .slot-plus{font-size:26px;font-weight:300;color:rgba(240,185,11,.55);line-height:1;transition:.2s;}
+.slot:hover .slot-plus{color:var(--gold);transform:scale(1.15)}
+.slot.filled{border-style:solid;border-color:var(--c55);background:linear-gradient(160deg,var(--c20),#0f0b1d);box-shadow:0 0 20px var(--c35);}
+.slot.filled:hover{border-color:var(--c);box-shadow:0 0 28px var(--c35);}
+.slot.filled .slot-emoji{font-size:36px;filter:drop-shadow(0 3px 8px rgba(0,0,0,.6));}
+.slot.filled .slot-name{position:absolute;bottom:3px;left:2px;right:2px;font-size:7.5px;font-weight:700;line-height:1.1;color:#fff;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.9);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.slot.filled::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,transparent 50%,rgba(0,0,0,.35));pointer-events:none;border-radius:12px;}
+.slot-empty-hint{font-size:10px;color:#5b5478;letter-spacing:1px;text-transform:uppercase;text-align:center;margin-top:4px;}
+
+.upg-center{display:flex;flex-direction:column;align-items:center;gap:16px;padding:8px 0;}
+.gauge-wrap{position:relative;width:280px;height:280px;display:grid;place-items:center;}
+.gauge-svg{width:100%;height:100%;transform:rotate(-90deg);}
+.gauge-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:14;}
+.gauge-progress{fill:none;stroke:var(--gold);stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.2,.9,.3,1.1), stroke .3s;filter:drop-shadow(0 0 12px rgba(240,185,11,.7));}
+.gauge-progress.win{stroke:#4ade80;filter:drop-shadow(0 0 16px rgba(74,222,128,.9));}
+.gauge-progress.lose{stroke:#ef4444;filter:drop-shadow(0 0 16px rgba(239,68,68,.9));}
+.gauge-marks{position:absolute;inset:0;pointer-events:none;}
+.gauge-mark{position:absolute;top:50%;left:50%;width:2px;height:8px;background:rgba(255,255,255,.15);transform-origin:center 130px;margin-top:-134px;}
+.gauge-inner{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;}
+.gauge-info{display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 34px;border-radius:50%;background:radial-gradient(circle,rgba(20,14,35,.9),rgba(10,7,20,.75));backdrop-filter:blur(6px);box-shadow:inset 0 0 40px rgba(0,0,0,.7);}
+.gauge-pct{font-size:44px;font-weight:900;line-height:1;background:linear-gradient(90deg,var(--gold),#fde047);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-1px;filter:drop-shadow(0 0 14px rgba(240,185,11,.4));transition:.3s;}
+.gauge-pct.empty{background:none;-webkit-text-fill-color:#5b5478;color:#5b5478;filter:none;}
+.gauge-status{font-size:9.5px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-weight:800;text-align:center;line-height:1.3;max-width:130px;}
+.gauge-status.win{color:#4ade80;}
+.gauge-status.lose{color:#ef4444;}
+.gauge-pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:13px solid var(--gold);filter:drop-shadow(0 0 8px rgba(240,185,11,.9));transition:.3s;}
+.gauge-pointer.spin{animation:gaugeSpin .6s linear infinite;}
+@keyframes gaugeSpin{from{transform:translateX(-50%) rotate(0deg);transform-origin:50% 146px}to{transform:translateX(-50%) rotate(360deg);transform-origin:50% 146px}}
+.gauge-pointer.win{border-top-color:#4ade80;filter:drop-shadow(0 0 8px rgba(74,222,128,.9));}
+.gauge-pointer.lose{border-top-color:#ef4444;filter:drop-shadow(0 0 8px rgba(239,68,68,.9));}
+.upg-summary{display:flex;gap:16px;font-size:12px;color:var(--muted);background:rgba(0,0,0,.3);padding:10px 18px;border-radius:12px;border:1px solid var(--border);}
+.upg-summary span b{color:#4ade80;font-weight:800;}
+.upg-summary span:last-child b{color:#f0abfc;}
+.upg-action-btn{width:100%;max-width:320px;padding:15px 24px;font-size:15px;letter-spacing:2px;text-transform:uppercase;background:linear-gradient(135deg,var(--gold),var(--orange));box-shadow:0 8px 26px rgba(240,185,11,.4);border-radius:14px;cursor:pointer;border:none;color:#1a0d00;font-weight:900;font-family:inherit;transition:.2s;}
+.upg-action-btn:hover:not(.disabled){box-shadow:0 12px 34px rgba(240,185,11,.6);transform:translateY(-2px);}
+.upg-action-btn.disabled{background:linear-gradient(135deg,#3a2a12,#2a1810);color:#6b5a3d;box-shadow:none;cursor:not-allowed;opacity:.6;}
+.upg-res-csgo{text-align:center;font-weight:900;font-size:15px;letter-spacing:2px;min-height:20px;text-transform:uppercase;}
+.upg-res-csgo.win{color:#4ade80;text-shadow:0 0 18px rgba(74,222,128,.8)}
+.upg-res-csgo.lose{color:#ef4444;text-shadow:0 0 18px rgba(239,68,68,.8)}
+
+/* PICKER */
+.picker-modal{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(4,2,10,.88);backdrop-filter:blur(12px);padding:16px;}
+.picker-modal.show{display:flex;animation:fade .25s;}
+.picker-box{width:100%;max-width:780px;max-height:85vh;background:linear-gradient(165deg,#181130,#0c0819);border:1px solid rgba(240,185,11,.4);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 70px rgba(240,185,11,.25);overflow:hidden;}
+.picker-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.picker-title{font-size:17px;font-weight:800;color:var(--gold);letter-spacing:1px;text-transform:uppercase;}
+.picker-close{width:32px;height:32px;border-radius:10px;border:1px solid var(--border);background:transparent;color:#8b83a8;font-size:16px;font-weight:900;cursor:pointer;display:grid;place-items:center;transition:.15s;font-family:inherit;}
+.picker-close:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.1);}
+.picker-search{font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);background:#0b0816;border:1px solid var(--border);border-radius:10px;padding:11px 14px;outline:none;width:100%;transition:.2s;}
+.picker-search:focus{border-color:rgba(240,185,11,.6);box-shadow:0 0 0 3px rgba(240,185,11,.14);}
+.picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;overflow-y:auto;padding-right:6px;flex:1;}
+.picker-grid::-webkit-scrollbar{width:8px}
+.picker-grid::-webkit-scrollbar-thumb{background:rgba(240,185,11,.4);border-radius:6px}
+.picker-empty{grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted);font-size:14px;border:1px dashed var(--border);border-radius:14px;}
+
+/* ITEM CARD */
+.item-card{position:relative;border-radius:14px;border:2px solid var(--c55);background:linear-gradient(160deg,var(--c20),#0f0b1d);padding:12px 7px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:.18s;text-align:center;user-select:none;}
+.item-card:hover{transform:translateY(-4px);box-shadow:0 10px 26px var(--c35);border-color:var(--c)}
+.item-card.selected{border-color:var(--c);box-shadow:0 0 0 2px var(--c),0 0 26px var(--c35);}
+.item-card .item-emoji{font-size:38px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.55))}
+.item-card .item-name{font-size:10.5px;font-weight:700;line-height:1.2;min-height:26px;display:flex;align-items:center}
+.item-card .item-rarity{font-size:8.5px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--c);opacity:.95}
+.item-card .item-value{font-size:11.5px;font-weight:800;color:#4ade80}
+
+/* INVENTORY */
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:11px;}
+.empty{grid-column:1/-1;text-align:center;padding:44px 16px;color:var(--muted);font-size:14px;border:1px dashed var(--border);border-radius:16px;}
+
+/* SHOP */
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;}
+.shop-card{background:linear-gradient(160deg,var(--c20),#0f0b1d);border:2px solid var(--c55);border-radius:16px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:.2s;}
+.shop-card:hover{transform:translateY(-4px);box-shadow:0 10px 26px var(--c35);border-color:var(--c)}
+.shop-card .shop-emoji{font-size:52px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+.shop-card .shop-name{font-size:12px;font-weight:800;text-align:center;line-height:1.2;min-height:30px}
+.shop-card .shop-rarity{font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;color:var(--c)}
+.shop-card .shop-price{font-size:15px;font-weight:900;color:var(--gold);margin-top:2px}
+.shop-card .shop-buy{width:100%;padding:9px;font-size:12.5px;font-weight:800;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a0d00;font-family:inherit;transition:.2s;}
+.shop-card .shop-buy:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(240,185,11,.5)}
+.shop-card .shop-buy:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;transform:none;}
+
+/* PROMO */
+.promo-block{margin-top:22px;padding:22px;background:linear-gradient(165deg,rgba(240,185,11,.08),#0e0a1c);border:1px solid rgba(240,185,11,.3);border-radius:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 40px rgba(240,185,11,.1);}
+.promo-block h3{font-size:16px;display:flex;align-items:center;gap:10px;background:linear-gradient(90deg,var(--gold),var(--orange));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.promo-block .sub{font-size:12.5px;color:var(--muted);margin-top:-6px}
+.promo-row{display:flex;gap:10px;flex-wrap:wrap}
+.promo-row input{flex:1;min-width:200px;font-family:inherit;font-size:15px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text);background:#0b0816;border:1px solid rgba(240,185,11,.35);border-radius:12px;padding:13px 16px;outline:none;transition:.2s;}
+.promo-row input:focus{border-color:rgba(240,185,11,.8);box-shadow:0 0 0 3px rgba(240,185,11,.18)}
+.promo-row input::placeholder{color:#5b5478;letter-spacing:1px;font-weight:600}
+.promo-row .btn{width:auto;padding:13px 26px;flex-shrink:0}
+
+/* ADMIN */
+.admin-hero{background:linear-gradient(135deg,rgba(239,68,68,.14),rgba(240,185,11,.1));border:1px solid rgba(239,68,68,.4);border-radius:20px;padding:20px 24px;display:flex;align-items:center;gap:16px;margin-bottom:20px;box-shadow:0 0 40px rgba(239,68,68,.14);}
+.admin-hero .ico{font-size:38px;filter:drop-shadow(0 0 12px rgba(240,185,11,.7))}
+.admin-hero .txt h3{font-size:18px;margin-bottom:3px;color:#fbbf24}
+.admin-hero .txt p{font-size:12.5px;color:#d4a86a}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.admin-grid{grid-template-columns:1fr}}
+.adm-box{background:linear-gradient(165deg,var(--panel2),#0d0919);border:1px solid rgba(240,185,11,.25);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;}
+.adm-box h4{font-size:12.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--gold);display:flex;align-items:center;gap:8px;margin-bottom:2px;}
+.adm-box .hint{font-size:11.5px;color:var(--muted);line-height:1.4}
+.adm-box input[type=text],.adm-box input[type=number],.adm-box input[type=password],.adm-box select{font-family:inherit;font-size:13.5px;font-weight:600;color:var(--text);background:#0b0816;border:1px solid var(--border);border-radius:10px;padding:11px 13px;outline:none;transition:.2s;width:100%;}
+.adm-box input:focus,.adm-box select:focus{border-color:rgba(240,185,11,.6);box-shadow:0 0 0 3px rgba(240,185,11,.14);}
+.adm-box input::placeholder{color:#5b5478}
+.adm-box label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.adm-field{display:flex;flex-direction:column;gap:5px}
+.adm-row{display:flex;gap:8px;flex-wrap:wrap}
+.adm-row .btn{width:auto;flex:1}
+.login-hero{background:linear-gradient(135deg,rgba(239,68,68,.18),rgba(240,185,11,.1));border:1px solid rgba(239,68,68,.5);border-radius:20px;padding:26px 24px;text-align:center;margin-bottom:20px;box-shadow:0 0 40px rgba(239,68,68,.2);}
+.login-hero .ico{font-size:52px;margin-bottom:8px;filter:drop-shadow(0 0 14px rgba(239,68,68,.7))}
+.login-hero h3{font-size:20px;margin-bottom:5px;color:#fbbf24}
+.login-hero p{font-size:13px;color:#d4a86a;max-width:420px;margin:0 auto}
+.login-box{max-width:460px;margin:0 auto;background:linear-gradient(165deg,var(--panel2),#0d0919);border:1px solid rgba(240,185,11,.35);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:12px;}
+.login-box label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.login-box input{font-family:inherit;font-size:15px;font-weight:700;color:var(--text);background:#0b0816;border:1px solid var(--border);border-radius:12px;padding:13px 15px;outline:none;transition:.2s;width:100%;letter-spacing:1px;}
+.login-box input:focus{border-color:rgba(240,185,11,.7);box-shadow:0 0 0 3px rgba(240,185,11,.16);}
+.login-box .hint{font-size:11.5px;color:var(--muted);line-height:1.5;text-align:center}
+.login-box .btn-row{display:flex;gap:8px}
+.login-box .btn-row .btn{flex:1}
+
+.promo-code-list{display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;padding-right:4px;}
+.promo-code-list::-webkit-scrollbar{width:6px}
+.promo-code-list::-webkit-scrollbar-thumb{background:rgba(240,185,11,.4);border-radius:6px}
+.pc-item{background:#0b0816;border:1px solid var(--border);border-radius:11px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.pc-item .pc-code{font-family:monospace;font-weight:900;font-size:13px;color:var(--gold);letter-spacing:1px;}
+.pc-item .pc-info{font-size:11px;color:var(--muted);margin-top:2px}
+.pc-item .pc-uses{background:rgba(34,211,238,.14);color:#22d3ee;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:800;}
+.pc-item .pc-del{width:26px;height:26px;border-radius:8px;border:none;cursor:pointer;background:rgba(239,68,68,.16);color:var(--red);font-weight:900;font-size:13px;display:grid;place-items:center;transition:.15s;font-family:inherit;}
+.pc-item .pc-del:hover{background:var(--red);color:#fff}
+.no-promos{color:#5b5478;font-size:12px;text-align:center;padding:12px}
+
+/* INFO BOX */
+.info-box{margin-top:14px;padding:16px;border-radius:14px;background:linear-gradient(135deg,rgba(34,197,94,.14),rgba(240,185,11,.08));border:1px solid rgba(34,197,94,.45);display:none;flex-direction:column;gap:10px;animation:fade .3s;}
+.info-box.show{display:flex}
+.info-box h5{font-size:14px;color:#4ade80;font-weight:800;display:flex;align-items:center;gap:8px;}
+.info-box p{font-size:12.5px;color:var(--muted);line-height:1.5}
+.info-box code{font-family:monospace;font-size:12px;font-weight:900;color:var(--gold);background:#0b0816;border:1px solid rgba(240,185,11,.35);border-radius:8px;padding:10px 12px;display:block;letter-spacing:1px;word-break:break-all;line-height:1.5;}
+.info-box .row{display:flex;gap:8px;flex-wrap:wrap}
+.info-box .row .btn{width:auto;flex:1;font-size:12px;padding:9px 12px}
+
+/* TOAST */
+#toast{position:fixed;left:50%;bottom:34px;transform:translate(-50%,26px);background:linear-gradient(135deg,#1e1636,#140f27);border:1px solid rgba(240,185,11,.55);color:#fff;font-weight:700;font-size:14px;padding:14px 26px;border-radius:14px;z-index:400;opacity:0;pointer-events:none;transition:.3s cubic-bezier(.2,.9,.3,1.3);box-shadow:0 14px 40px rgba(0,0,0,.7);max-width:90vw;text-align:center;}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-in">
+    <div class="logo"><span class="gun">🔫</span><span>SO2 UPGRADER</span></div>
+    <div class="spacer"></div>
+    <div class="head-user">
+      <div class="mini-ava" id="miniAva" title="Профиль">?</div>
+      <div class="mini-info">
+        <div class="mini-nick" id="miniNick">Гость</div>
+        <div class="mini-id" id="miniId">ID: —</div>
+      </div>
+      <div class="balance" title="Баланс"><div class="coin">₡</div><span id="coins">0</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab active" data-tab="upgrader">⚡ Апгрейдер</button>
+    <button class="tab" data-tab="shop">🛒 Магазин скинов</button>
+    <button class="tab" data-tab="inventory">🎒 Инвентарь</button>
+    <button class="tab admin-tab" data-tab="admin" id="adminTab">🛡️ Админ-панель</button>
+  </div>
+
+  <!-- UPGRADER -->
+  <section class="panel active" id="panel-upgrader">
+    <div class="panel-head">
+      <h2>Апгрейдер</h2>
+      <p>Выбери до 6 скинов слева и цель справа. Шанс = стоимость ставки ÷ стоимость цели (макс. 90%)</p>
+    </div>
+    <div class="upg-csgo">
+      <div class="upg-col">
+        <div class="upg-col-head">
+          <div class="upg-col-title">🎯 ВЫБЕРИТЕ СКИНЫ</div>
+          <div class="upg-col-sub" id="upgSlotsCount">0 ИЗ 6</div>
+        </div>
+        <div class="upg-slots" id="upgSlots"></div>
+        <div class="slot-empty-hint">Нажми на слот, чтобы добавить скин</div>
+      </div>
+      <div class="upg-center">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 280 280">
+            <circle class="gauge-track" cx="140" cy="140" r="120"></circle>
+            <circle class="gauge-progress" id="gaugeProgress" cx="140" cy="140" r="120" stroke-dasharray="753.98" stroke-dashoffset="753.98"></circle>
+          </svg>
+          <div class="gauge-marks" id="gaugeMarks"></div>
+          <div class="gauge-pointer" id="gaugePointer"></div>
+          <div class="gauge-inner">
+            <div class="gauge-info">
+              <div class="gauge-pct empty" id="upgChance">?%</div>
+              <div class="gauge-status" id="upgStatus">ОЖИДАНИЕ СКИНОВ</div>
+            </div>
+          </div>
+        </div>
+        <div class="upg-summary">
+          <span>Ставка: <b id="upgBetVal">0 ₡</b></span>
+          <span>Цель: <b id="upgTarVal">—</b></span>
+        </div>
+        <button class="upg-action-btn disabled" id="upgBtn" disabled>АПГРЕЙД</button>
+        <div class="upg-res-csgo" id="upgRes"></div>
+      </div>
+      <div class="upg-col">
+        <div class="upg-col-head">
+          <div class="upg-col-title">🎯 ВЫБЕРИТЕ ЦЕЛЬ</div>
+        </div>
+        <div class="upg-slots target-only" id="upgTargetSlots"></div>
+        <div class="slot-empty-hint">Нажми на слот, чтобы выбрать цель</div>
+      </div>
+    </div>
+
+    <!-- PROMO -->
+    <div class="promo-block">
+      <h3>🎟️ У меня есть промокод</h3>
+      <div class="sub">Введи код и получи бонус — деньги или скин. Всё зависит от того, что заложил админ.</div>
+      <div class="promo-row">
+        <input type="text" id="promoInput" placeholder="ВВЕДИ ПРОМОКОД" maxlength="32" autocomplete="off">
+        <button class="btn" id="promoBtn">АКТИВИРОВАТЬ</button>
+      </div>
+      <div class="info-box" id="promoResult">
+        <h5>✅ Промокод активирован!</h5>
+        <div id="promoResultBody"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section class="panel" id="panel-shop">
+    <div class="panel-head">
+      <h2>🛒 Магазин скинов</h2>
+      <p>Купи скины за монеты. Стоимость зависит от редкости. Скины можно потом апгрейдить!</p>
+    </div>
+    <div class="shop-grid" id="shopGrid"></div>
+  </section>
+
+  <!-- INVENTORY -->
+  <section class="panel" id="panel-inventory">
+    <div class="panel-head">
+      <h2>🎒 Инвентарь</h2>
+      <p>Скинов: <b id="invCount">0</b> · Общая стоимость: <b id="invValue">0</b> ₡ · Продажа даёт 85% цены</p>
+    </div>
+    <div class="inv-grid" id="invGrid"></div>
+  </section>
+
+  <!-- ADMIN -->
+  <section class="panel" id="panel-admin">
+    <div id="adminLogin">
+      <div class="login-hero">
+        <div class="ico">🔐</div>
+        <h3 id="adminLoginTitle">Вход в админ-панель</h3>
+        <p id="adminLoginSub">Введи пароль для доступа</p>
+      </div>
+      <div class="login-box" id="adminLoginBox">
+        <label id="adminPassLabel">Пароль</label>
+        <input type="password" id="adminPasswordInput" placeholder="••••••••" maxlength="64">
+        <div id="adminSetupFields" style="display:none;flex-direction:column;gap:5px;margin-top:4px">
+          <label>🔑 Секретный код установки</label>
+          <input type="password" id="adminSecretInput" placeholder="Секретный код" maxlength="128">
+          <label style="margin-top:6px">🔑 Мастер-ключ (резервный)</label>
+          <input type="password" id="adminMasterInput" placeholder="Минимум 8 символов" maxlength="64">
+          <div class="hint" style="text-align:left;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);padding:9px 11px;border-radius:9px;margin-top:4px">
+            ⚠️ <b>Секретный код знаешь только ты.</b> Запиши мастер-ключ!
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="adminLoginBtn">🔓 Войти</button>
+        </div>
+        <div class="hint" id="adminLoginHint">Пароль хранится как SHA-256 хеш.</div>
+      </div>
+    </div>
+
+    <div id="adminContent" style="display:none">
+      <div class="admin-hero">
+        <div class="ico">🛡️</div>
+        <div class="txt">
+          <h3>Админ-панель</h3>
+          <p>Промокоды, реальные настройки удачи и денег, выдача скинов</p>
+        </div>
+        <div style="margin-left:auto">
+          <button class="btn ghost small" id="adminLogoutBtn" style="color:var(--red)">🚪 Выйти</button>
+        </div>
+      </div>
+      <div class="admin-grid">
+        <div class="adm-box">
+          <h4>🔒 Пароль админки</h4>
+          <div class="adm-field">
+            <label>Текущий пароль</label>
+            <input type="password" id="admCurrentPassword" placeholder="Текущий пароль" maxlength="64">
+          </div>
+          <div class="adm-field">
+            <label>Новый пароль</label>
+            <input type="password" id="admNewPassword" placeholder="Минимум 6 символов" maxlength="64">
+          </div>
+          <div class="adm-row">
+            <button class="btn small" id="admChangePasswordBtn">💾 Сменить пароль</button>
+          </div>
+        </div>
+
+        <div class="adm-box">
+          <h4>🎲 Реальная удача</h4>
+          <div class="hint">Определяет, какой шанс реально выпадет при апгрейде. 50% — честно как показывает. Меньше 50% — игроку сложнее выиграть. Больше 50% — легче.</div>
+          <div class="adm-field">
+            <label>Множитель удачи (0.1 — 2.0)</label>
+            <input type="number" id="admLuckMult" step="0.05" min="0.1" max="2.0" placeholder="1.0">
+          </div>
+          <div class="hint">1.0 = честно, 0.5 = вдвое сложнее, 1.5 = в полтора раза легче</div>
+          <div class="adm-row">
+            <button class="btn small" id="admSaveLuck">💾 Сохранить</button>
+          </div>
+        </div>
+
+        <div class="adm-box">
+          <h4>💰 Реальные деньги</h4>
+          <div class="hint">Настройка выдачи денег и цен в магазине.</div>
+          <div class="adm-field">
+            <label>Множитель стартового баланса</label>
+            <input type="number" id="admStartMoney" step="1" min="0" placeholder="1500">
+          </div>
+          <div class="adm-field">
+            <label>Множитель цен в магазине</label>
+            <input type="number" id="admShopMult" step="0.1" min="0.1" max="10" placeholder="1.0">
+          </div>
+          <div class="adm-row">
+            <button class="btn small" id="admSaveMoney">💾 Сохранить</button>
+          </div>
+        </div>
+
+        <div class="adm-box">
+          <h4>🎁 Выдать скины</h4>
+          <div class="adm-field">
+            <label>Выбрать скин</label>
+            <select id="admSkinSelect"></select>
+          </div>
+          <div class="adm-row">
+            <button class="btn small" id="admGiveSkin">🎁 Выдать</button>
+            <button class="btn small red" id="admResetInv">🗑️ Очистить инвентарь</button>
+          </div>
+        </div>
+
+        <div class="adm-box">
+          <h4>🎟️ Промокод на удачу</h4>
+          <div class="hint">Даёт игроку временный бонус к удаче (например +20%) на N использований.</div>
+          <div class="adm-field">
+            <label>Код</label>
+            <input type="text" id="admPromoLuckCode" placeholder="LUCKY2026" maxlength="24" style="text-transform:uppercase">
+          </div>
+          <div class="adm-field">
+            <label>Бонус к удаче (в %) — например 20</label>
+            <input type="number" id="admPromoLuckBonus" placeholder="20" min="1" max="100">
+          </div>
+          <div class="adm-field">
+            <label>Сколько раз можно активировать</label>
+            <input type="number" id="admPromoLuckUses" value="1" min="1" max="9999">
+          </div>
+          <button class="btn small" id="admCreateLuckPromo">🎟️ Создать промокод</button>
+        </div>
+
+        <div class="adm-box">
+          <h4>💰 Промокод на деньги</h4>
+          <div class="hint">Даёт игроку конкретную сумму монет.</div>
+          <div class="adm-field">
+            <label>Код</label>
+            <input type="text" id="admPromoMoneyCode" placeholder="BONUS5000" maxlength="24" style="text-transform:uppercase">
+          </div>
+          <div class="adm-field">
+            <label>Сумма монет</label>
+            <input type="number" id="admPromoMoneyAmount" placeholder="5000" min="1">
+          </div>
+          <div class="adm-field">
+            <label>Сколько раз можно активировать</label>
+            <input type="number" id="admPromoMoneyUses" value="1" min="1" max="9999">
+          </div>
+          <button class="btn small" id="admCreateMoneyPromo">🎟️ Создать промокод</button>
+        </div>
+
+        <div class="adm-box">
+          <h4>🎁 Промокод на скин</h4>
+          <div class="hint">Даёт игроку конкретный скин из магазина.</div>
+          <div class="adm-field">
+            <label>Код</label>
+            <input type="text" id="admPromoSkinCode" placeholder="FREESKIN" maxlength="24" style="text-transform:uppercase">
+          </div>
+          <div class="adm-field">
+            <label>Какой скин дать</label>
+            <select id="admPromoSkinItem"></select>
+          </div>
+          <div class="adm-field">
+            <label>Сколько раз можно активировать</label>
+            <input type="number" id="admPromoSkinUses" value="1" min="1" max="9999">
+          </div>
+          <button class="btn small" id="admCreateSkinPromo">🎟️ Создать промокод</button>
+        </div>
+      </div>
+
+      <div class="adm-box" style="margin-top:16px">
+        <h4>📋 Активные промокоды</h4>
+        <div class="promo-code-list" id="adminPromoList"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- PICKER MODAL -->
+<div class="picker-modal" id="pickerModal">
+  <div class="picker-box">
+    <div class="picker-head">
+      <div class="picker-title" id="pickerTitle">ВЫБЕРИТЕ СКИН</div>
+      <button class="picker-close" id="pickerClose">✕</button>
+    </div>
+    <input type="text" class="picker-search" id="pickerSearch" placeholder="🔍 Поиск по названию..." autocomplete="off">
+    <div class="picker-grid" id="pickerGrid"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ==================== КОНСТАНТЫ ==================== */
+const KEY = 'so2_upgrader_v1';
+const ADMIN_KEY = 'so2_admin_v1';
+const ADMIN_SECRET = 'BRAINROTCASSERWADMINWALLPLSDONATEMEPLSSSS';
+let adminData = { passwordHash: '', masterHash: '' };
+let adminAuthed = false;
+
+const RARITY = {
+  consumer:    { name:'Ширпотреб', color:'#b0c3d9' },
+  industrial:  { name:'Промышленное', color:'#5e98d9' },
+  milspec:     { name:'Армейское', color:'#4b69ff' },
+  restricted:  { name:'Запрещённое', color:'#8847ff' },
+  classified:  { name:'Засекреченное', color:'#d32ce6' },
+  covert:      { name:'Тайное', color:'#eb4b4b' },
+  gold:        { name:'Золотое', color:'#ffd700' }
+};
+
+// Скины в стиле Standoff 2 / CS:GO
+const SKINS = [
+  // Consumer
+  { id:'glock_grass', name:'Glock-18 | Джунгли', emoji:'🔫', rarity:'consumer', value:50 },
+  { id:'usp_dust',   name:'USP-S | Пыль',        emoji:'🔫', rarity:'consumer', value:60 },
+  { id:'p250_sand',  name:'P250 | Песок',         emoji:'🔫', rarity:'consumer', value:40 },
+  { id:'mp5_olive',  name:'MP5 | Олива',          emoji:'🔫', rarity:'consumer', value:70 },
+  // Industrial
+  { id:'ak_blue',    name:'AK-47 | Синий ламинат', emoji:'🔫', rarity:'industrial', value:180 },
+  { id:'m4_gray',    name:'M4A4 | Серый призрак',  emoji:'🔫', rarity:'industrial', value:220 },
+  { id:'awp_moss',   name:'AWP | Мох',             emoji:'🔫', rarity:'industrial', value:250 },
+  { id:'deagle_rust',name:'Desert Eagle | Ржавчина', emoji:'🔫', rarity:'industrial', value:200 },
+  // Mil-Spec
+  { id:'ak_redline', name:'AK-47 | Красная линия', emoji:'🔫', rarity:'milspec', value:800 },
+  { id:'m4_asiimov_blue', name:'M4A4 | Азимов (синий)', emoji:'🔫', rarity:'milspec', value:950 },
+  { id:'awp_worm',   name:'AWP | Змеиная кожа',    emoji:'🔫', rarity:'milspec', value:1100 },
+  { id:'famas_doom', name:'FAMAS | Роланд',        emoji:'🔫', rarity:'milspec', value:700 },
+  // Restricted
+  { id:'ak_vulcan',  name:'AK-47 | Вулкан',        emoji:'🔫', rarity:'restricted', value:4500 },
+  { id:'m4_howl_blue', name:'M4A4 | Крик (синий)', emoji:'🔫', rarity:'restricted', value:5200 },
+  { id:'awp_lightning', name:'AWP | Молния',       emoji:'🔫', rarity:'restricted', value:4800 },
+  { id:'deagle_blaze', name:'Desert Eagle | Пламя', emoji:'🔫', rarity:'restricted', value:4000 },
+  // Classified
+  { id:'ak_fire',    name:'AK-47 | Огонь',         emoji:'🔫', rarity:'classified', value:18000 },
+  { id:'m4_dragon_blue', name:'M4A4 | Дракон (синий)', emoji:'🔫', rarity:'classified', value:22000 },
+  { id:'awp_dragon', name:'AWP | Дракон',          emoji:'🔫', rarity:'classified', value:25000 },
+  { id:'knife_bayonet', name:'Штык-нож | Стандарт', emoji:'🗡️', rarity:'classified', value:20000 },
+  // Covert
+  { id:'ak_fire_serpent', name:'AK-47 | Огненный змей', emoji:'🔫', rarity:'covert', value:120000 },
+  { id:'awp_dragon_lore', name:'AWP | Драконья история', emoji:'🔫', rarity:'covert', value:150000 },
+  { id:'knife_karambit', name:'Керамбит | Градиент', emoji:'🗡️', rarity:'covert', value:180000 },
+  { id:'m4_howl',    name:'M4A4 | Крик (настоящий)', emoji:'🔫', rarity:'covert', value:200000 },
+  // Gold
+  { id:'knife_butterfly_gold', name:'Бабочка | Золото', emoji:'🗡️', rarity:'gold', value:5000000 },
+  { id:'ak_gold',    name:'AK-47 | Золотой араб',  emoji:'🔫', rarity:'gold', value:8000000 },
+  { id:'awp_medusa', name:'AWP | Медуза',          emoji:'🔫', rarity:'gold', value:12000000 }
+];
+const SKIN_MAP = Object.fromEntries(SKINS.map(s => [s.id, s]));
+
+/* ==================== ХРАНИЛИЩЕ ==================== */
+const SafeStorage = (() => {
+  let mode = 'memory', memData = null;
+  function tLS(){ try{ const k='__tls__'; localStorage.setItem(k,'1'); localStorage.removeItem(k); return true; }catch(e){ return false; } }
+  function tSS(){ try{ const k='__tss__'; sessionStorage.setItem(k,'1'); sessionStorage.removeItem(k); return true; }catch(e){ return false; } }
+  function sC(n,v,d){ try{ const dt=new Date(); dt.setTime(dt.getTime()+d*864e5); document.cookie=n+'='+encodeURIComponent(v)+';expires='+dt.toUTCString()+';path=/'; return true; }catch(e){ return false; } }
+  function gC(n){ try{ const m=document.cookie.match(new RegExp('(?:^|; )'+n+'=([^;]*)')); return m?decodeURIComponent(m[1]):null; }catch(e){ return null; } }
+  if (tLS()) mode='localStorage';
+  else if (tSS()) mode='sessionStorage';
+  else if (sC('__t__','1',1)) mode='cookie';
+  else mode='memory';
+  return {
+    get mode(){ return mode; },
+    get(k){ try{
+      if(mode==='localStorage') return localStorage.getItem(k);
+      if(mode==='sessionStorage') return sessionStorage.getItem(k);
+      if(mode==='cookie') return gC(k);
+      return memData;
+    }catch(e){ return null; } },
+    set(k,v){ try{
+      if(mode==='localStorage'){ localStorage.setItem(k,v); return true; }
+      if(mode==='sessionStorage'){ sessionStorage.setItem(k,v); return true; }
+      if(mode==='cookie'){ if(!sC(k,v,365)){ memData=v; mode='memory'; } return true; }
+      memData=v; return true;
+    }catch(e){ memData=v; mode='memory'; return false; } }
+  };
+})();
+
+/* ==================== СОСТОЯНИЕ ==================== */
+let state = {
+  coins: 1500,
+  inv: [],          // [{ uid, skinId }]
+  luckBonus: 0,     // % бонус к удаче (временный от промокодов)
+  promos: {},       // { CODE: { type: 'luck'|'money'|'skin', ... } }
+  stats: { upgrades:0, bought:0, bestDrop:0, bestDropName:'' },
+  profile: { id:'', nick:'', joined:0 }
+};
+
+// Настройки админа
+let settings = {
+  luckMult: 1.0,
+  startMoney: 1500,
+  shopMult: 1.0
+};
+
+let upgSlots = [null, null, null, null, null, null];
+let upgTargetItem = null;
+let upgBusy = false;
+let pickerMode = null;
+let pickerSlotIndex = -1;
+
+/* ==================== SHA-256 ==================== */
+async function sha256Hex(str){
+  const buf = new TextEncoder().encode(str);
+  const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ==================== УТИЛИТЫ ==================== */
+const fmt = n => Math.round(n).toLocaleString('ru-RU');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+function genId(){ const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s=''; for(let i=0;i<8;i++) s+=c[Math.floor(Math.random()*c.length)]; return 'SO2-'+s; }
+function genNick(){
+  const adj=['Тунг','Лари','Бомба','Капучино','Сатурн','Обезино','Триппи','Чимпанзи','Крокодило','Бурбалони'];
+  const noun=['Сахур','Патапим','Ассасино','Гаргантюа','Крокодило','Гусини','Троппи','Бананини','Универсино','Сатурнита'];
+  return adj[Math.floor(Math.random()*adj.length)]+' '+noun[Math.floor(Math.random()*noun.length)];
+}
+function initials(n){ const c=(n||'?').trim().split(/\s+/); return ((c[0]?.[0]||'?')+(c[1]?.[0]||'')).toUpperCase(); }
+function rgba(h,a){ const n=parseInt(h.slice(1),16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+function toast(m){
+  const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),3000);
+}
+function save(){ try{ SafeStorage.set(KEY,JSON.stringify(state)); }catch(e){} }
+function saveSettings(){ try{ SafeStorage.set(KEY+'_settings', JSON.stringify(settings)); }catch(e){} }
+function load(){
+  try{
+    const raw = SafeStorage.get(KEY);
+    if (raw){
+      const d = JSON.parse(raw);
+      state = Object.assign(state, d);
+      state.inv = state.inv||[];
+      state.promos = state.promos||{};
+      state.stats = Object.assign({ upgrades:0, bought:0, bestDrop:0, bestDropName:'' }, state.stats||{});
+      state.profile = Object.assign({ id:'', nick:'', joined:0 }, state.profile||{});
+    }
+    const rawS = SafeStorage.get(KEY+'_settings');
+    if (rawS){
+      const s = JSON.parse(rawS);
+      settings = Object.assign(settings, s);
+    }
+  }catch(e){}
+}
+function ensureProfile(){
+  let changed = false;
+  if(!state.profile.id){ state.profile.id = genId(); changed = true; }
+  if(!state.profile.nick){ state.profile.nick = genNick(); changed = true; }
+  if(!state.profile.joined){ state.profile.joined = Date.now(); changed = true; }
+  if(changed) save();
+}
+function isAdmin(){ return adminAuthed === true; }
+
+/* ==================== АДМИН-АВТОРИЗАЦИЯ ==================== */
+function loadAdmin(){
+  try {
+    const raw = SafeStorage.get(ADMIN_KEY);
+    if (raw){
+      const d = JSON.parse(raw);
+      adminData.passwordHash = typeof d.passwordHash === 'string' ? d.passwordHash : '';
+      adminData.masterHash = typeof d.masterHash === 'string' ? d.masterHash : '';
+    }
+  } catch(e){}
+}
+function saveAdmin(){
+  try { SafeStorage.set(ADMIN_KEY, JSON.stringify(adminData)); } catch(e){}
+}
+function showAdminLoginView(){
+  document.getElementById('adminLoginBox').style.display = 'flex';
+  const isSetup = !adminData.passwordHash;
+  document.getElementById('adminSetupFields').style.display = isSetup ? 'flex' : 'none';
+  document.getElementById('adminPasswordInput').value = '';
+  const si = document.getElementById('adminSecretInput');
+  if (si) si.value = '';
+  const mi = document.getElementById('adminMasterInput');
+  if (mi) mi.value = '';
+  if (isSetup){
+    document.getElementById('adminLoginTitle').textContent = '🔐 Первичная настройка';
+    document.getElementById('adminLoginSub').textContent = 'Нужен секретный код установки.';
+    document.getElementById('adminPassLabel').textContent = 'Придумайте пароль';
+    document.getElementById('adminLoginHint').innerHTML = 'Без секретного кода пройти нельзя.';
+  } else {
+    document.getElementById('adminLoginTitle').textContent = '🔐 Вход в админ-панель';
+    document.getElementById('adminLoginSub').textContent = 'Введи пароль';
+    document.getElementById('adminPassLabel').textContent = 'Пароль';
+    document.getElementById('adminLoginHint').innerHTML = 'Пароль знаешь только ты.';
+  }
+}
+async function adminLogin(){
+  const pwdEl = document.getElementById('adminPasswordInput');
+  const pwd = pwdEl.value;
+  if (!pwd || pwd.length < 4) return toast('❌ Пароль слишком короткий');
+  if (!adminData.passwordHash){
+    const secret = document.getElementById('adminSecretInput').value;
+    const master = document.getElementById('adminMasterInput').value;
+    if (!secret) return toast('❌ Введи секретный код установки');
+    if (secret !== ADMIN_SECRET) return toast('❌ Неверный секретный код');
+    if (pwd.length < 6) return toast('❌ Пароль минимум 6 символов');
+    if (!master || master.length < 8) return toast('❌ Мастер-ключ минимум 8 символов');
+    adminData.passwordHash = await sha256Hex(pwd);
+    adminData.masterHash = await sha256Hex(master);
+    saveAdmin();
+    adminAuthed = true;
+    pwdEl.value = '';
+    document.getElementById('adminSecretInput').value = '';
+    document.getElementById('adminMasterInput').value = '';
+    toast('🔐 Пароль установлен!');
+    renderAdmin(); renderTop();
+    return;
+  }
+  const hash = await sha256Hex(pwd);
+  if (hash === adminData.passwordHash){
+    adminAuthed = true;
+    pwdEl.value = '';
+    toast('✅ Добро пожаловать!');
+    renderAdmin(); renderTop();
+  } else {
+    toast('❌ Неверный пароль');
+    pwdEl.value = '';
+    pwdEl.focus();
+  }
+}
+function adminLogout(){
+  adminAuthed = false;
+  renderAdmin(); renderTop();
+  toast('👋 Вы вышли');
+}
+async function adminChangePassword(){
+  if (!adminAuthed) return toast('Сначала войдите');
+  const cur = document.getElementById('admCurrentPassword').value;
+  const nw = document.getElementById('admNewPassword').value;
+  if (!cur) return toast('❌ Введи текущий пароль');
+  if (!nw || nw.length < 6) return toast('❌ Новый пароль минимум 6 символов');
+  const curHash = await sha256Hex(cur);
+  if (curHash !== adminData.passwordHash) return toast('❌ Неверный текущий пароль');
+  adminData.passwordHash = await sha256Hex(nw);
+  saveAdmin();
+  document.getElementById('admCurrentPassword').value = '';
+  document.getElementById('admNewPassword').value = '';
+  toast('✅ Пароль изменён!');
+}
+
+/* ==================== РЕНДЕР ==================== */
+function renderTop(){
+  document.getElementById('coins').textContent = fmt(state.coins);
+  document.getElementById('miniNick').textContent = state.profile.nick;
+  document.getElementById('miniId').textContent = 'ID: ' + state.profile.id;
+  const ava = document.getElementById('miniAva');
+  ava.textContent = initials(state.profile.nick);
+  ava.classList.toggle('admin', isAdmin());
+  const tab = document.getElementById('adminTab');
+  if (tab) tab.classList.toggle('unlocked', isAdmin());
+}
+
+function skinCardHTML(skin, o={}){
+  const r = RARITY[skin.rarity];
+  return `<div class="item-card${o.selected?' selected':''}"
+    data-uid="${o.uid||''}" data-skin="${skin.id}"
+    style="--c:${r.color};--c20:${rgba(r.color,.16)};--c55:${rgba(r.color,.55)};--c35:${rgba(r.color,.35)}">
+    <div class="item-emoji">${skin.emoji}</div>
+    <div class="item-name">${skin.name}</div>
+    <div class="item-rarity">${r.name}</div>
+    <div class="item-value">${fmt(skin.value)} ₡</div>
+  </div>`;
+}
+
+function renderInventory(){
+  const g = document.getElementById('invGrid');
+  if(!state.inv.length){
+    g.innerHTML='<div class="empty">🎒 Инвентарь пуст — купи скины в магазине!</div>';
+    document.getElementById('invCount').textContent='0';
+    document.getElementById('invValue').textContent='0';
+    return;
+  }
+  const sorted = [...state.inv].sort((a,b)=>SKIN_MAP[b.skinId].value - SKIN_MAP[a.skinId].value);
+  g.innerHTML = sorted.map(o=>{
+    const skin = SKIN_MAP[o.skinId];
+    const r = RARITY[skin.rarity];
+    return `<div class="item-card" data-uid="${o.uid}" data-inv-skin="${skin.id}"
+      style="--c:${r.color};--c20:${rgba(r.color,.16)};--c55:${rgba(r.color,.55)};--c35:${rgba(r.color,.35)}">
+      <div class="item-emoji">${skin.emoji}</div>
+      <div class="item-name">${skin.name}</div>
+      <div class="item-rarity">${r.name}</div>
+      <div class="item-value">${fmt(skin.value)} ₡</div>
+      <button class="sell-btn" data-sell="${o.uid}" style="position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:8px;border:none;background:rgba(0,0,0,.6);color:#4ade80;font-size:12px;font-weight:900;cursor:pointer;display:grid;place-items:center;font-family:inherit;">₡</button>
+    </div>`;
+  }).join('');
+  document.getElementById('invCount').textContent = state.inv.length;
+  document.getElementById('invValue').textContent = fmt(state.inv.reduce((s,o)=>s+SKIN_MAP[o.skinId].value, 0));
+}
+
+function renderShop(){
+  const grid = document.getElementById('shopGrid');
+  const sorted = [...SKINS].sort((a,b) => a.value - b.value);
+  grid.innerHTML = sorted.map(s => {
+    const r = RARITY[s.rarity];
+    const price = Math.round(s.value * settings.shopMult);
+    const canBuy = state.coins >= price;
+    return `<div class="shop-card" style="--c:${r.color};--c20:${rgba(r.color,.16)};--c55:${rgba(r.color,.55)};--c35:${rgba(r.color,.35)}">
+      <div class="shop-emoji">${s.emoji}</div>
+      <div class="shop-name">${s.name}</div>
+      <div class="shop-rarity">${r.name}</div>
+      <div class="shop-price">${fmt(price)} ₡</div>
+      <button class="shop-buy" data-buy="${s.id}" ${canBuy?'':'disabled'}>${canBuy?'Купить':'Не хватает'}</button>
+    </div>`;
+  }).join('');
+}
+
+/* ==================== UPGRADER ==================== */
+function renderUpgrader(){
+  upgSlots = upgSlots.map(u => u && state.inv.some(o => o.uid === u) ? u : null);
+  const slotsEl = document.getElementById('upgSlots');
+  slotsEl.innerHTML = upgSlots.map((u, i) => {
+    if (!u){
+      return `<div class="slot" data-bet-slot="${i}"><div class="slot-plus">+</div></div>`;
+    }
+    const o = state.inv.find(x => x.uid === u);
+    if (!o) return `<div class="slot" data-bet-slot="${i}"><div class="slot-plus">+</div></div>`;
+    const skin = SKIN_MAP[o.skinId], r = RARITY[skin.rarity];
+    return `<div class="slot filled" data-bet-slot="${i}"
+      style="--c:${r.color};--c20:${rgba(r.color,.2)};--c55:${rgba(r.color,.55)};--c35:${rgba(r.color,.35)}"
+      title="${skin.name} — ${fmt(skin.value)} ₡. Клик чтобы убрать">
+      <div class="slot-emoji">${skin.emoji}</div>
+      <div class="slot-name">${skin.name}</div>
+    </div>`;
+  }).join('');
+  const filled = upgSlots.filter(x => x).length;
+  document.getElementById('upgSlotsCount').textContent = filled + ' ИЗ 6';
+  const tgtEl = document.getElementById('upgTargetSlots');
+  if (upgTargetItem && SKIN_MAP[upgTargetItem]){
+    const skin = SKIN_MAP[upgTargetItem], r = RARITY[skin.rarity];
+    tgtEl.innerHTML = `<div class="slot filled" data-target-slot="1"
+      style="--c:${r.color};--c20:${rgba(r.color,.2)};--c55:${rgba(r.color,.55)};--c35:${rgba(r.color,.35)}"
+      title="${skin.name} — ${fmt(skin.value)} ₡">
+      <div class="slot-emoji">${skin.emoji}</div>
+      <div class="slot-name">${skin.name}</div>
+    </div>`;
+  } else {
+    tgtEl.innerHTML = `<div class="slot" data-target-slot="1" title="Выбрать цель"><div class="slot-plus">◎</div></div>`;
+  }
+  updateUpgGauge();
+}
+function betValue(){
+  let v = 0;
+  upgSlots.forEach(u => {
+    if (!u) return;
+    const o = state.inv.find(x => x.uid === u);
+    if (o) v += SKIN_MAP[o.skinId].value;
+  });
+  return v;
+}
+function updateUpgGauge(){
+  const bv = betValue();
+  const tv = upgTargetItem && SKIN_MAP[upgTargetItem] ? SKIN_MAP[upgTargetItem].value : 0;
+  const chance = (bv > 0 && tv > 0) ? Math.min(90, bv / tv * 100) : 0;
+  const pctEl = document.getElementById('upgChance');
+  const statusEl = document.getElementById('upgStatus');
+  const progress = document.getElementById('gaugeProgress');
+  const pointer = document.getElementById('gaugePointer');
+  progress.classList.remove('win','lose');
+  pointer.classList.remove('win','lose');
+  statusEl.classList.remove('win','lose');
+  if (chance > 0){
+    pctEl.classList.remove('empty');
+    pctEl.textContent = chance.toFixed(1) + '%';
+    statusEl.textContent = chance >= 50 ? 'ХОРОШИЙ ШАНС' : 'РИСКОВАННО';
+  } else if (bv > 0 && !upgTargetItem){
+    pctEl.classList.add('empty'); pctEl.textContent = '?%'; statusEl.textContent = 'ВЫБЕРИТЕ ЦЕЛЬ';
+  } else if (bv === 0 && upgTargetItem){
+    pctEl.classList.add('empty'); pctEl.textContent = '?%'; statusEl.textContent = 'ВЫБЕРИТЕ СКИНЫ';
+  } else {
+    pctEl.classList.add('empty'); pctEl.textContent = '?%'; statusEl.textContent = 'ОЖИДАНИЕ СКИНОВ';
+  }
+  const circumference = 2 * Math.PI * 120;
+  const offset = circumference - (chance / 100) * circumference;
+  progress.style.strokeDashoffset = offset;
+  const angle = (chance / 100) * 360 - 90;
+  pointer.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+  pointer.style.transformOrigin = '50% 146px';
+  document.getElementById('upgBetVal').textContent = fmt(bv) + ' ₡';
+  document.getElementById('upgTarVal').textContent = tv ? fmt(tv) + ' ₡' : '—';
+  const btn = document.getElementById('upgBtn');
+  const canUpgrade = chance > 0 && !upgBusy;
+  btn.disabled = !canUpgrade;
+  btn.classList.toggle('disabled', !canUpgrade);
+  btn.textContent = upgBusy ? 'КРУТИМ...' : 'АПГРЕЙД';
+}
+
+/* ==================== PICKER ==================== */
+function openPicker(mode, slotIndex){
+  pickerMode = mode;
+  pickerSlotIndex = slotIndex || -1;
+  const modal = document.getElementById('pickerModal');
+  const title = document.getElementById('pickerTitle');
+  const search = document.getElementById('pickerSearch');
+  search.value = '';
+  title.textContent = mode === 'bet' ? '🎯 ВЫБЕРИТЕ СКИН ДЛЯ СТАВКИ' : '🎯 ВЫБЕРИТЕ ЦЕЛЬ АПГРЕЙДА';
+  let itemsToShow = [];
+  if (mode === 'bet'){
+    itemsToShow = state.inv.map(o => ({ ...SKIN_MAP[o.skinId], uid: o.uid }));
+  } else {
+    itemsToShow = SKINS.map(s => ({ ...s, uid: null }));
+  }
+  renderPickerGrid(itemsToShow);
+  search.oninput = () => {
+    const q = search.value.trim().toLowerCase();
+    const filtered = q ? itemsToShow.filter(it => it.name.toLowerCase().includes(q)) : itemsToShow;
+    renderPickerGrid(filtered);
+  };
+  modal.classList.add('show');
+  setTimeout(() => search.focus(), 100);
+}
+function renderPickerGrid(items){
+  const grid = document.getElementById('pickerGrid');
+  if (!items.length){ grid.innerHTML = '<div class="picker-empty">Ничего не найдено</div>'; return; }
+  const sorted = [...items].sort((a,b) => b.value - a.value);
+  grid.innerHTML = sorted.map(it => {
+    const r = RARITY[it.rarity];
+    return `<div class="item-card" data-picker-skin="${it.id}" data-picker-uid="${it.uid||''}"
+      style="--c:${r.color};--c20:${rgba(r.color,.16)};--c55:${rgba(r.color,.55)};--c35:${rgba(r.color,.35)}">
+      <div class="item-emoji">${it.emoji}</div>
+      <div class="item-name">${it.name}</div>
+      <div class="item-rarity">${r.name}</div>
+      <div class="item-value">${fmt(it.value)} ₡</div>
+    </div>`;
+  }).join('');
+}
+function closePicker(){
+  document.getElementById('pickerModal').classList.remove('show');
+  pickerMode = null; pickerSlotIndex = -1;
+}
+function pickItem(skinId, uid){
+  if (pickerMode === 'bet'){
+    const o = state.inv.find(x => x.uid === uid);
+    if (!o) return toast('Скин не найден');
+    if (upgSlots.includes(uid)){ toast('⚠️ Уже в ставке'); return; }
+    if (pickerSlotIndex >= 0 && pickerSlotIndex < 6){ upgSlots[pickerSlotIndex] = uid; }
+    else {
+      const empty = upgSlots.indexOf(null);
+      if (empty < 0){ toast('Все слоты заняты'); return; }
+      upgSlots[empty] = uid;
+    }
+  } else {
+    upgTargetItem = skinId;
+  }
+  save(); renderUpgrader();
+  closePicker();
+}
+
+/* ==================== UPGRADE LOGIC (С РЕАЛЬНОЙ УДАЧЕЙ) ==================== */
+function doUpgrade(){
+  if (upgBusy) return;
+  const bv = betValue();
+  const tv = upgTargetItem && SKIN_MAP[upgTargetItem] ? SKIN_MAP[upgTargetItem].value : 0;
+  if (bv <= 0 || tv <= 0){ toast('Выбери скины и цель'); return; }
+  const baseChance = Math.min(90, bv / tv * 100);
+  // Реальная удача = базовый шанс × множитель удачи × (1 + бонус от промо/100)
+  const luckMult = settings.luckMult || 1.0;
+  const promoBonus = (state.luckBonus || 0) / 100;
+  const realChance = Math.min(95, baseChance * luckMult * (1 + promoBonus));
+  const uids = upgSlots.filter(x => x);
+  const targetId = upgTargetItem;
+
+  upgBusy = true;
+  updateUpgGauge();
+
+  // Крутим стрелку
+  const pointer = document.getElementById('gaugePointer');
+  pointer.classList.add('spin');
+  pointer.classList.remove('win','lose');
+  const progress = document.getElementById('gaugeProgress');
+  progress.classList.remove('win','lose');
+  const resEl = document.getElementById('upgRes');
+  resEl.textContent = 'КРУТИМ...'; resEl.className = 'upg-res-csgo';
+
+  // Крутим 3 секунды
+  const spinDuration = 3000;
+  const startTime = Date.now();
+  const spinAnimation = () => {
+    if (!upgBusy) return;
+    const elapsed = Date.now() - startTime;
+    if (elapsed >= spinDuration){
+      // Останавливаем
+      pointer.classList.remove('spin');
+      finishUpgrade(realChance, uids, targetId);
+      return;
+    }
+    requestAnimationFrame(spinAnimation);
+  };
+  requestAnimationFrame(spinAnimation);
+}
+
+function finishUpgrade(chance, uids, targetId){
+  const roll = Math.random() * 100;
+  const win = roll < chance;
+  const finalAngle = (roll / 100) * 360 - 90;
+  const pointer = document.getElementById('gaugePointer');
+  pointer.style.transition = 'transform .5s ease-out';
+  pointer.style.transform = `translateX(-50%) rotate(${finalAngle}deg)`;
+  pointer.style.transformOrigin = '50% 146px';
+  pointer.classList.add(win ? 'win' : 'lose');
+
+  const progress = document.getElementById('gaugeProgress');
+  progress.classList.add(win ? 'win' : 'lose');
+
+  const statusEl = document.getElementById('upgStatus');
+  statusEl.classList.add(win ? 'win' : 'lose');
+  statusEl.textContent = win ? 'УСПЕХ!' : 'ПРОВАЛ';
+  document.getElementById('upgChance').textContent = roll.toFixed(1) + '%';
+
+  setTimeout(() => {
+    state.inv = state.inv.filter(o => !uids.includes(o.uid));
+    if (win){
+      state.inv.push({ uid: uid(), skinId: targetId });
+      const skin = SKIN_MAP[targetId];
+      if (skin.value > state.stats.bestDrop){
+        state.stats.bestDrop = skin.value;
+        state.stats.bestDropName = skin.name;
+      }
+    }
+    state.stats.upgrades++;
+    upgSlots = [null,null,null,null,null,null];
+    upgTargetItem = null;
+    upgBusy = false;
+    save(); renderAll();
+
+    const resEl = document.getElementById('upgRes');
+    resEl.textContent = win ? '🎉 УСПЕХ' : '💀 ПРОВАЛ';
+    resEl.className = 'upg-res-csgo ' + (win ? 'win' : 'lose');
+    toast(win ? `Апгрейд удался! Получен ${SKIN_MAP[targetId].emoji} ${SKIN_MAP[targetId].name}` : 'Апгрейд провален — скины потеряны');
+  }, 600);
+}
+
+/* ==================== МАГАЗИН ==================== */
+function buySkin(skinId){
+  const skin = SKIN_MAP[skinId];
+  if (!skin) return;
+  const price = Math.round(skin.value * settings.shopMult);
+  if (state.coins < price) return toast('❌ Недостаточно монет');
+  state.coins -= price;
+  state.inv.push({ uid: uid(), skinId });
+  state.stats.bought++;
+  save(); renderAll();
+  toast(`✅ Куплен ${skin.emoji} ${skin.name} за ${fmt(price)} ₡`);
+}
+
+/* ==================== ПРОМОКОДЫ ==================== */
+function activatePromo(){
+  const input = document.getElementById('promoInput');
+  const code = (input.value||'').trim().toUpperCase();
+  if(!code) return toast('Введи промокод');
+  const promo = state.promos[code];
+  if(!promo) return toast('❌ Промокод не найден');
+  if(promo.uses >= promo.maxUses) return toast('❌ Промокод исчерпан');
+
+  let resultText = '';
+  if (promo.type === 'money'){
+    state.coins += promo.amount;
+    resultText = `💰 +${fmt(promo.amount)} ₡`;
+  } else if (promo.type === 'skin'){
+    const skin = SKIN_MAP[promo.skinId];
+    if (!skin) return toast('Скин промокода не существует');
+    state.inv.push({ uid: uid(), skinId: promo.skinId });
+    resultText = `🎁 Получен скин: ${skin.emoji} ${skin.name}`;
+  } else if (promo.type === 'luck'){
+    state.luckBonus = (state.luckBonus || 0) + promo.bonus;
+    resultText = `🍀 Бонус к удаче +${promo.bonus}% (текущий: +${state.luckBonus}%)`;
+  }
+
+  promo.uses++;
+  input.value = '';
+  save(); renderAll();
+
+  document.getElementById('promoResultBody').innerHTML = `<p>${resultText}</p>`;
+  document.getElementById('promoResult').classList.add('show');
+  toast('🎟️ Промокод активирован!');
+}
+
+/* ==================== АДМИН ==================== */
+function renderAdmin(){
+  const loginEl = document.getElementById('adminLogin');
+  const contentEl = document.getElementById('adminContent');
+  if (!loginEl || !contentEl) return;
+  if (!adminAuthed){
+    loginEl.style.display = 'block';
+    contentEl.style.display = 'none';
+    showAdminLoginView();
+    return;
+  }
+  loginEl.style.display = 'none';
+  contentEl.style.display = 'block';
+
+  // Заполняем селекты
+  const skinOpts = SKINS.map(s => `<option value="${s.id}">${s.emoji} ${s.name} (${RARITY[s.rarity].name})</option>`).join('');
+  const sel1 = document.getElementById('admSkinSelect');
+  const sel2 = document.getElementById('admPromoSkinItem');
+  if (sel1) sel1.innerHTML = skinOpts;
+  if (sel2) sel2.innerHTML = skinOpts;
+
+  // Заполняем поля настроек
+  document.getElementById('admLuckMult').value = settings.luckMult;
+  document.getElementById('admStartMoney').value = settings.startMoney;
+  document.getElementById('admShopMult').value = settings.shopMult;
+
+  renderAdminPromos();
+}
+function renderAdminPromos(){
+  const list = document.getElementById('adminPromoList');
+  if(!list) return;
+  const e = Object.entries(state.promos);
+  if(!e.length){ list.innerHTML='<div class="no-promos">Промокодов пока нет</div>'; return; }
+  list.innerHTML = e.map(([code,p])=>{
+    let info = '';
+    if (p.type === 'money') info = `💰 ${fmt(p.amount)} ₡`;
+    else if (p.type === 'skin') info = `🎁 ${SKIN_MAP[p.skinId]?.name || '?'}`;
+    else if (p.type === 'luck') info = `🍀 +${p.bonus}% удачи`;
+    return `<div class="pc-item">
+      <div><div class="pc-code">${code}</div>
+        <div class="pc-info">${info} · ${new Date(p.created).toLocaleDateString('ru-RU')}</div></div>
+      <span class="pc-uses">${p.uses} / ${p.maxUses}</span>
+      <button class="pc-del" data-del-promo="${code}">✕</button>
+    </div>`;
+  }).join('');
+}
+function adminDeletePromo(code){
+  if(!adminAuthed) return;
+  if(!state.promos[code]) return;
+  delete state.promos[code];
+  save(); renderAdminPromos();
+  toast('🗑️ Промокод удалён');
+}
+function adminSaveLuck(){
+  const v = parseFloat(document.getElementById('admLuckMult').value);
+  if (isNaN(v) || v < 0.1 || v > 2.0) return toast('❌ Множитель 0.1 — 2.0');
+  settings.luckMult = v;
+  saveSettings();
+  toast(`🍀 Удача: ×${v}`);
+}
+function adminSaveMoney(){
+  const s = parseFloat(document.getElementById('admStartMoney').value);
+  const m = parseFloat(document.getElementById('admShopMult').value);
+  if (!isNaN(s) && s >= 0) settings.startMoney = s;
+  if (!isNaN(m) && m >= 0.1 && m <= 10) settings.shopMult = m;
+  saveSettings();
+  toast('💰 Настройки сохранены');
+  renderShop();
+}
+function adminGiveSkin(){
+  if(!adminAuthed) return;
+  const id = document.getElementById('admSkinSelect').value;
+  if(!SKIN_MAP[id]) return;
+  state.inv.push({ uid: uid(), skinId: id });
+  const skin = SKIN_MAP[id];
+  if (skin.value > state.stats.bestDrop){
+    state.stats.bestDrop = skin.value;
+    state.stats.bestDropName = skin.name;
+  }
+  save(); renderAll();
+  toast(`🎁 Выдан: ${skin.emoji} ${skin.name}`);
+}
+function adminResetInv(){
+  if(!adminAuthed) return;
+  if(!confirm('Точно очистить инвентарь?')) return;
+  state.inv = []; upgSlots = [null,null,null,null,null,null];
+  save(); renderAll();
+  toast('🗑️ Инвентарь очищен');
+}
+function adminCreateLuckPromo(){
+  if(!adminAuthed) return;
+  const code = (document.getElementById('admPromoLuckCode').value||'').trim().toUpperCase();
+  const bonus = parseInt(document.getElementById('admPromoLuckBonus').value);
+  const maxUses = Math.max(1, parseInt(document.getElementById('admPromoLuckUses').value)||1);
+  if (code.length < 3) return toast('Код слишком короткий');
+  if (!/^[A-Z0-9_-]+$/.test(code)) return toast('Только A-Z, 0-9, _ и -');
+  if (state.promos[code]) return toast('Такой промокод уже существует');
+  if (!bonus || bonus < 1 || bonus > 100) return toast('Бонус 1-100%');
+  state.promos[code] = { type:'luck', bonus, maxUses, uses:0, created:Date.now() };
+  save(); renderAdminPromos();
+  document.getElementById('admPromoLuckCode').value = '';
+  toast(`✅ Промокод на удачу «${code}» создан`);
+}
+function adminCreateMoneyPromo(){
+  if(!adminAuthed) return;
+  const code = (document.getElementById('admPromoMoneyCode').value||'').trim().toUpperCase();
+  const amount = parseInt(document.getElementById('admPromoMoneyAmount').value);
+  const maxUses = Math.max(1, parseInt(document.getElementById('admPromoMoneyUses').value)||1);
+  if (code.length < 3) return toast('Код слишком короткий');
+  if (!/^[A-Z0-9_-]+$/.test(code)) return toast('Только A-Z, 0-9, _ и -');
+  if (state.promos[code]) return toast('Такой промокод уже существует');
+  if (!amount || amount < 1) return toast('Сумма больше 0');
+  state.promos[code] = { type:'money', amount, maxUses, uses:0, created:Date.now() };
+  save(); renderAdminPromos();
+  document.getElementById('admPromoMoneyCode').value = '';
+  document.getElementById('admPromoMoneyAmount').value = '';
+  toast(`✅ Промокод на деньги «${code}» создан`);
+}
+function adminCreateSkinPromo(){
+  if(!adminAuthed) return;
+  const code = (document.getElementById('admPromoSkinCode').value||'').trim().toUpperCase();
+  const skinId = document.getElementById('admPromoSkinItem').value;
+  const maxUses = Math.max(1, parseInt(document.getElementById('admPromoSkinUses').value)||1);
+  if (code.length < 3) return toast('Код слишком короткий');
+  if (!/^[A-Z0-9_-]+$/.test(code)) return toast('Только A-Z, 0-9, _ и -');
+  if (state.promos[code]) return toast('Такой промокод уже существует');
+  if (!SKIN_MAP[skinId]) return toast('Скин не найден');
+  state.promos[code] = { type:'skin', skinId, maxUses, uses:0, created:Date.now() };
+  save(); renderAdminPromos();
+  document.getElementById('admPromoSkinCode').value = '';
+  toast(`✅ Промокод на скин «${code}» создан`);
+}
+
+/* ==================== ДЕЙСТВИЯ ==================== */
+function renderAll(){
+  renderTop();
+  renderUpgrader();
+  renderShop();
+  renderInventory();
+  renderAdmin();
+}
+function sellItem(u){
+  const i = state.inv.findIndex(o=>o.uid===u); if(i<0) return;
+  const skin = SKIN_MAP[state.inv[i].skinId];
+  const price = Math.floor(skin.value * 0.85);
+  state.coins += price;
+  state.inv.splice(i,1);
+  upgSlots = upgSlots.map(x => x === u ? null : x);
+  save(); renderAll();
+  toast(`Продано: ${skin.emoji} ${skin.name} → +${fmt(price)} ₡`);
+}
+
+/* ==================== СОБЫТИЯ ==================== */
+document.addEventListener('click', e => {
+  if (e.target.closest('#pickerClose')){ closePicker(); return; }
+  if (e.target.id === 'pickerModal'){ closePicker(); return; }
+
+  const pick = e.target.closest('[data-picker-skin]');
+  if (pick && pickerMode){
+    pickItem(pick.dataset.pickerSkin, pick.dataset.pickerUid || null);
+    return;
+  }
+
+  const sell = e.target.closest('[data-sell]');
+  if(sell){ e.stopPropagation(); sellItem(sell.dataset.sell); return; }
+
+  const dp = e.target.closest('[data-del-promo]');
+  if(dp){ adminDeletePromo(dp.dataset.delPromo); return; }
+
+  const buy = e.target.closest('[data-buy]');
+  if(buy && !buy.disabled){ buySkin(buy.dataset.buy); return; }
+
+  const betSlot = e.target.closest('[data-bet-slot]');
+  if (betSlot && !upgBusy){
+    const idx = parseInt(betSlot.dataset.betSlot);
+    if (upgSlots[idx]){
+      upgSlots[idx] = null;
+      save(); renderUpgrader();
+    } else {
+      openPicker('bet', idx);
+    }
+    return;
+  }
+
+  const tgtSlot = e.target.closest('[data-target-slot]');
+  if (tgtSlot && !upgBusy){
+    if (upgTargetItem){
+      upgTargetItem = null;
+      save(); renderUpgrader();
+    } else {
+      openPicker('target');
+    }
+    return;
+  }
+});
+
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.tab).classList.add('active');
+    if(t.dataset.tab==='upgrader') renderUpgrader();
+    if(t.dataset.tab==='shop') renderShop();
+    if(t.dataset.tab==='inventory') renderInventory();
+    if(t.dataset.tab==='admin') renderAdmin();
+  });
+});
+
+document.getElementById('upgBtn').addEventListener('click', doUpgrade);
+document.getElementById('promoBtn').addEventListener('click', activatePromo);
+document.getElementById('promoInput').addEventListener('keydown', e=>{ if(e.key==='Enter') activatePromo(); });
+
+document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);
+document.getElementById('adminPasswordInput').addEventListener('keydown', e=>{ if(e.key==='Enter') adminLogin(); });
+document.getElementById('adminSecretInput').addEventListener('keydown', e=>{ if(e.key==='Enter') adminLogin(); });
+document.getElementById('adminMasterInput').addEventListener('keydown', e=>{ if(e.key==='Enter') adminLogin(); });
+document.getElementById('adminLogoutBtn').addEventListener('click', adminLogout);
+document.getElementById('admChangePasswordBtn').addEventListener('click', adminChangePassword);
+document.getElementById('admSaveLuck').addEventListener('click', adminSaveLuck);
+document.getElementById('admSaveMoney').addEventListener('click', adminSaveMoney);
+document.getElementById('admGiveSkin').addEventListener('click', adminGiveSkin);
+document.getElementById('admResetInv').addEventListener('click', adminResetInv);
+document.getElementById('admCreateLuckPromo').addEventListener('click', adminCreateLuckPromo);
+document.getElementById('admCreateMoneyPromo').addEventListener('click', adminCreateMoneyPromo);
+document.getElementById('admCreateSkinPromo').addEventListener('click', adminCreateSkinPromo);
+
+(function initGaugeMarks(){
+  const marksContainer = document.getElementById('gaugeMarks');
+  if (!marksContainer) return;
+  for (let i = 0; i < 24; i++){
+    const angle = (i / 24) * 360;
+    const mark = document.createElement('div');
+    mark.className = 'gauge-mark';
+    mark.style.transform = `rotate(${angle}deg)`;
+    marksContainer.appendChild(mark);
+  }
+})();
+
+/* ==================== СТАРТ ==================== */
+load();
+loadAdmin();
+ensureProfile();
+// Если это первый заход — выдать стартовый баланс из настроек
+if (!state.inv.length && state.coins === 1500 && settings.startMoney !== 1500){
+  state.coins = settings.startMoney;
+}
+save();
+renderAll();
+setInterval(()=>{}, 1000);
+window.addEventListener('beforeunload', save);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='hidden') save(); });
+</script>
+</body>
+</html>
